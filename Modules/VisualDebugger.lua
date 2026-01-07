@@ -1,4 +1,3 @@
-
 -- =============================================
 -- NEXUS OS - VISUAL DEBUGGER MODULE
 -- Arquivo: VisualDebugger.lua
