@@ -1,4 +1,3 @@
-
 -- =============================================
 -- NEXUS OS - STATE MANAGER
 -- Arquivo: StateManager.lua
