@@ -76,47 +76,7 @@ AutomationAndInteraction.DefaultConfig = {
         QuestPriority = "Closest"
     }
 }
--- ============ OTIMIZAÇÃO E SEGURANÇA (NEXUS CRYPTO) ============
--- Cache local para performance
-local NexusCrypto = _G.NexusCrypto
-local patternAvoidance = NexusCrypto and NexusCrypto.Config.AntiBan.BehaviorProtection.PatternAvoidance
 
-function AutomationAndInteraction:PerformSafeAction(action)
-    -- Validação básica
-    if type(action) ~= "function" then
-        warn("[Automation] Action must be a function")
-        return nil
-    end
-
-    -- 1. Randomização de Timing e Input via NexusCrypto
-    if NexusCrypto then
-        local randomized = NexusCrypto:RandomizeAction(action, 0.05)
-        if type(randomized) == "function" then
-            action = randomized
-        end
-    end
-    
-    -- 2. Evitar Padrões (Behavior Protection)
-    if patternAvoidance then
-        local patternCheck = NexusCrypto.BehaviorRandomizer and NexusCrypto.BehaviorRandomizer.AvoidPatterns
-        if patternCheck then
-            local safeAction = patternCheck(action)
-            if type(safeAction) == "function" then
-                action = safeAction
-            end
-        end
-    end
-    
-    -- 3. Execução Protegida (Anti-Crash)
-    local success, result = pcall(action)
-    
-    if not success then
-        warn("[Automation] Action failed safely: " .. tostring(result))
-        return nil
-    end
-
-    return result
-end
 
 -- ============ SISTEMA DE ALVO ============
 local TargetSystem = {
