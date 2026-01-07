@@ -58,27 +58,6 @@ PhysicsAndMovement.DefaultConfig = {
         AntiStuck = true
     }
 }
--- ============ SEGURANÇA DE FÍSICA (NEXUS CRYPTO) ============
-local NexusCrypto = _G.NexusCrypto
-local ProtectionState = NexusCrypto and NexusCrypto.State
-local ProtectionConfig = NexusCrypto and NexusCrypto.Config.AntiBan
-
-local function IsSecurityClear()
-    if not (NexusCrypto and ProtectionState and ProtectionState.ProtectionActive) then
-        return true -- Sem proteção configurada, permite execução
-    end
-
-    local currentTime = os.clock() -- Alta precisão
-    local lastDetection = ProtectionState.LastDetection or 0
-    local cooldown = ProtectionConfig.DetectionCooldown or 5
-
-    -- Verifica Cooldown
-    if lastDetection > 0 and (currentTime - lastDetection) < cooldown then
-        return false, "Security cooldown active (" .. string.format("%.2f", cooldown - (currentTime - lastDetection)) .. "s)"
-    end
-
-    return true
-end
 
 -- ============ SISTEMA DE INPUT ============
 local InputSystem = {
@@ -111,6 +90,38 @@ function InputSystem:ProcessInput(input)
     end
 end
 
+-- ============ SISTEMA DE PROTEÇÃO ANTI-BAN ============
+local AntiBanSystem = {
+    LastActivation = 0,
+    ActivationCount = 0,
+    MaxActivationsPerMinute = 30,
+    CooldownUntil = 0
+}
+
+function AntiBanSystem:CanActivate()
+    local now = tick()
+    
+    -- Verificar cooldown
+    if now < self.CooldownUntil then
+        return false, "Cooldown active"
+    end
+    
+    -- Resetar contagem se passou 1 minuto
+    if now - self.LastActivation > 60 then
+        self.ActivationCount = 0
+        self.LastActivation = now
+    end
+    
+    -- Verificar limite de ativações
+    if self.ActivationCount >= self.MaxActivationsPerMinute then
+        self.CooldownUntil = now + 30
+        return false, "Rate limit exceeded"
+    end
+    
+    self.ActivationCount = self.ActivationCount + 1
+    return true
+end
+
 -- ============ FEATURE 1: SUPERMAN FLIGHT ============
 PhysicsAndMovement.Features[1] = {
     Name = "Superman Flight",
@@ -118,29 +129,19 @@ PhysicsAndMovement.Features[1] = {
     Category = "Flight",
     DefaultKeybind = "F",
     
-        Activate = function()
-        -- 1. Verificação de Segurança Anti-Ban
-        local isSafe, reason = IsSecurityClear()
-        if not isSafe then
-            print("[Anti-Ban] Flight blocked: " .. reason)
+    Activate = function()
+        local canActivate, reason = AntiBanSystem:CanActivate()
+        if not canActivate then
+            warn("[Anti-Ban] Flight blocked:", reason)
             return false, reason
         end
-
-        -- 2. Delay Humanizado na Ativação
-        if NexusCrypto then
-            local delay = NexusCrypto:GetRandomDelay(0.1)
-            if task and task.wait then task.wait(delay) else wait(delay) end
-        end
-
-        -- Início do código original da Feature...
+        
         local self = PhysicsAndMovement
         
         if not self:ValidateCharacter() then
             return false, "No character found"
         end
         
-        -- (O resto do código da feature continua aqui...)
-
         -- Criar partes de voo
         local root = self.State.Character:FindFirstChild("HumanoidRootPart")
         if not root then
@@ -169,7 +170,7 @@ PhysicsAndMovement.Features[1] = {
         local lastUpdate = tick()
         
         -- Configurar NoClip se ativado
-        if config.NoClip then
+        if self.Config.Flight.NoClip then
             self:EnableNoClip()
         end
         
@@ -216,16 +217,16 @@ PhysicsAndMovement.Features[1] = {
             local vertical = Vector3.new(0, up - down, 0)
             
             -- Calcular velocidade final
-            local targetVelocity = (direction * speed) + (vertical * verticalSpeed)
+            local targetVelocity = (direction * self.Config.Flight.Speed) + (vertical * self.Config.Flight.VerticalSpeed)
             
             -- Aplicar suavidade
-            velocity = velocity:Lerp(targetVelocity, smoothness * deltaTime * 10)
+            velocity = velocity:Lerp(targetVelocity, self.Config.Flight.Smoothness * deltaTime * 10)
             
             -- Aplicar velocidade
             bodyVelocity.Velocity = velocity
             
             -- Atualizar BodyGyro para manter orientação
-            if config.AutoHover then
+            if self.Config.Flight.AutoHover then
                 local targetCFrame = CFrame.new(root.Position, root.Position + lookVector)
                 bodyGyro.CFrame = bodyGyro.CFrame:Lerp(targetCFrame, 0.1)
             end
@@ -302,6 +303,12 @@ PhysicsAndMovement.Features[2] = {
     DefaultKeybind = "N",
     
     Activate = function()
+        local canActivate, reason = AntiBanSystem:CanActivate()
+        if not canActivate then
+            warn("[Anti-Ban] NoClip blocked:", reason)
+            return false, reason
+        end
+        
         local self = PhysicsAndMovement
         
         if not self:ValidateCharacter() then
@@ -409,6 +416,12 @@ PhysicsAndMovement.Features[3] = {
     DefaultKeybind = "V",
     
     Activate = function()
+        local canActivate, reason = AntiBanSystem:CanActivate()
+        if not canActivate then
+            warn("[Anti-Ban] Speed Control blocked:", reason)
+            return false, reason
+        end
+        
         local self = PhysicsAndMovement
         
         if not self:ValidateCharacter() then
@@ -482,6 +495,12 @@ PhysicsAndMovement.Features[4] = {
     DefaultKeybind = "J",
     
     Activate = function()
+        local canActivate, reason = AntiBanSystem:CanActivate()
+        if not canActivate then
+            warn("[Anti-Ban] Super Jump blocked:", reason)
+            return false, reason
+        end
+        
         local self = PhysicsAndMovement
         
         if not self:ValidateCharacter() then
@@ -586,6 +605,12 @@ PhysicsAndMovement.Features[17] = {
     DefaultKeybind = "T",
     
     Activate = function()
+        local canActivate, reason = AntiBanSystem:CanActivate()
+        if not canActivate then
+            warn("[Anti-Ban] Teleport blocked:", reason)
+            return false, reason
+        end
+        
         local self = PhysicsAndMovement
         
         if not self:ValidateCharacter() then
@@ -708,6 +733,12 @@ PhysicsAndMovement.Features[23] = {
     DefaultKeybind = "B",
     
     Activate = function()
+        local canActivate, reason = AntiBanSystem:CanActivate()
+        if not canActivate then
+            warn("[Anti-Ban] Vehicle Boost blocked:", reason)
+            return false, reason
+        end
+        
         local self = PhysicsAndMovement
         
         -- Encontrar veículo atual
