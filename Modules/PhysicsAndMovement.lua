@@ -58,6 +58,27 @@ PhysicsAndMovement.DefaultConfig = {
         AntiStuck = true
     }
 }
+-- ============ SEGURANÇA DE FÍSICA (NEXUS CRYPTO) ============
+local NexusCrypto = _G.NexusCrypto
+local ProtectionState = NexusCrypto and NexusCrypto.State
+local ProtectionConfig = NexusCrypto and NexusCrypto.Config.AntiBan
+
+local function IsSecurityClear()
+    if not (NexusCrypto and ProtectionState and ProtectionState.ProtectionActive) then
+        return true -- Sem proteção configurada, permite execução
+    end
+
+    local currentTime = os.clock() -- Alta precisão
+    local lastDetection = ProtectionState.LastDetection or 0
+    local cooldown = ProtectionConfig.DetectionCooldown or 5
+
+    -- Verifica Cooldown
+    if lastDetection > 0 and (currentTime - lastDetection) < cooldown then
+        return false, "Security cooldown active (" .. string.format("%.2f", cooldown - (currentTime - lastDetection)) .. "s)"
+    end
+
+    return true
+end
 
 -- ============ SISTEMA DE INPUT ============
 local InputSystem = {
@@ -97,19 +118,29 @@ PhysicsAndMovement.Features[1] = {
     Category = "Flight",
     DefaultKeybind = "F",
     
-    Activate = function()
+        Activate = function()
+        -- 1. Verificação de Segurança Anti-Ban
+        local isSafe, reason = IsSecurityClear()
+        if not isSafe then
+            print("[Anti-Ban] Flight blocked: " .. reason)
+            return false, reason
+        end
+
+        -- 2. Delay Humanizado na Ativação
+        if NexusCrypto then
+            local delay = NexusCrypto:GetRandomDelay(0.1)
+            if task and task.wait then task.wait(delay) else wait(delay) end
+        end
+
+        -- Início do código original da Feature...
         local self = PhysicsAndMovement
         
         if not self:ValidateCharacter() then
             return false, "No character found"
         end
         
-        -- Configurações
-        local config = self.Config.Flight
-        local speed = config.Speed
-        local smoothness = config.Smoothness
-        local verticalSpeed = config.VerticalSpeed
-        
+        -- (O resto do código da feature continua aqui...)
+
         -- Criar partes de voo
         local root = self.State.Character:FindFirstChild("HumanoidRootPart")
         if not root then
