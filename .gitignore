@@ -1,0 +1,13 @@
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de configuração local
+NexusOS/
+*.json
+
+# Logs
+*.log
+
+# Backups
+*.bak
