@@ -1,13 +1,13 @@
 -- =============================================
--- NEXUS OS - RAYFIELD UI ADAPTER
+-- NEXUS OS - RAYFIELD UI ADAPTER (NO KEY SYSTEM)
 -- Arquivo: RayfieldAdapter.lua
 -- Local: src/UI/RayfieldAdapter.lua
 -- =============================================
 
 local RayfieldAdapter = {
     Name = "RayfieldAdapter",
-    Version = "2.0.0",
-    Description = "Adaptador para a biblioteca de UI Rayfield",
+    Version = "2.1.0", -- Versão atualizada
+    Description = "Adaptador para a biblioteca de UI Rayfield (Sem Key System)",
     Author = "Nexus Team",
     
     Config = {},
@@ -41,7 +41,7 @@ RayfieldAdapter.DefaultConfig = {
             Invite = "discord.gg/nexusos",
             RememberJoins = true
         },
-        KeySystem = true,
+        KeySystem = false, -- DESATIVADO: Sistema de chave removido
         KeySettings = {
             Title = "Nexus OS Authentication",
             Subtitle = "Enter your license key",
@@ -171,16 +171,8 @@ function WindowSystem:CreateWindow(config)
             Invite = "invite",
             RememberJoins = false
         },
-        KeySystem = config.KeySystem or false,
-        KeySettings = config.KeySettings or {
-            Title = "Nexus OS",
-            Subtitle = "Key System",
-            Note = "No key provided",
-            FileName = "NexusKey",
-            SaveKey = false,
-            GrabKeyFromSite = false,
-            Key = {"NEXUS-OS"}
-        }
+        KeySystem = false, -- GARANTINDO QUE ESTEJA DESATIVADO
+        KeySettings = config.KeySettings -- Mantido apenas para evitar erros se a lib exigir a tabela
     }
     
     -- Criar janela
@@ -1085,3 +1077,4 @@ if not _G.NexusUI then
 end
 
 return RayfieldAdapter
+
