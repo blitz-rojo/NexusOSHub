@@ -5,10 +5,10 @@
 -- =============================================
 
 local NexusOS = {
-    Version = "18.0.0",
-    BuildDate = "2024-11-12",
+    Version = "NON",
+    BuildDate = "2026-01-07",
     Developer = "Nexus Development Team",
-    Repository = "https://github.com/YourUsername/Nexus-OS-v18",
+    Repository = "https://github.com/blitz-rojo/NexusOSHub",
     
     -- Sistema de módulos
     Modules = {},
@@ -319,7 +319,7 @@ end
 -- ============ SISTEMA DE ATUALIZAÇÃO ============
 local UpdateSystem = {
     CurrentVersion = NexusOS.Version,
-    UpdateURL = "https://raw.githubusercontent.com/YourUsername/Nexus-OS-v18/main/version.json",
+    UpdateURL = "https://github.com/blitz-rojo/NexusOSHub/main/version.json",
     ChangelogURL = "https://api.nexusos.dev/changelog",
     UpdateAvailable = false,
     LatestVersion = nil
@@ -439,7 +439,7 @@ end
 
 -- ============ INICIALIZAÇÃO DO SISTEMA ============
 function NexusOS:Initialize()
-    Logger:Log("INFO", "=== NEXUS OS v18 INITIALIZATION ===", "System")
+    Logger:Log("INFO", "=== NEXUS OS HUB INITIALIZATION ===", "System")
     
     -- Verificar ambiente
     if not isfolder or not makefolder or not writefile then
